@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Energy Consumption Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1b263b, #415a77);
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+        }
+
+        input, button {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        input {
+            width: calc(100% - 40px); /* Responsive width */
+            max-width: 400px; /* Max width */
+        }
+
+        button {
+            background-color: black;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #333;
+        }
+
+        button:focus, input:focus {
+            outline: 2px solid #fff;
+            outline-offset: 4px;
+        }
+
+        #result, #suggestions {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+
+        .high-consumption {
+            color: red;
+        }
+
+        .moderate-consumption {
+            color: orange;
+        }
+
+        .low-consumption {
+            color: green;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        /* Styling for reset button */
+        .reset-button {
+            background-color: #e74c3c;
+            color: #fff;
+        }
+
+        /* Media query for mobile optimization */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            input, button {
+                width: 100%;
+                margin: 5px 0;
+            }
+            .button-container {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Energy Consumption Calculator</h1>
+
+    <label for="name">Appliance Name:</label>
+    <input type="text" id="name" placeholder="e.g., Washing Machine" />
+
+    <label for="power-rating">Power Rating (kW):</label>
+    <input type="number" id="power-rating" placeholder="e.g., 1.5" step="0.1" min="0.1" />
+
+    <label for="hours-used">Hours Used per Day:</label>
+    <input type="number" id="hours-used" placeholder="e.g., 3" min="1" />
+
+    <!-- Buttons aligned side by side -->
+    <div class="button-container">
+        <button id="add-button">Add Appliance</button>
+        <button id="done-button">Done</button>
+        <button id="reset-button" class="reset-button">Reset</button>
+    </div>
+
+    <div id="appliance-list"></div>
+    <div id="result"></div>
+    <div id="suggestions"></div>
+
+    <script>
+        document.getElementById("add-button").addEventListener("click", addAppliance);
+        document.getElementById("done-button").addEventListener("click", calculateTotalConsumption);
+        document.getElementById("reset-button").addEventListener("click", resetCalculator);
+
+        let appliances = [];
+
+        // Function to add an appliance
+        function addAppliance() {
+            let name = document.getElementById("name").value;
+            let powerRating = parseFloat(document.getElementById("power-rating").value);
+            let hoursUsed = parseInt(document.getElementById("hours-used").value);
+
+            if (name && !isNaN(powerRating) && !isNaN(hoursUsed) && powerRating > 0 && hoursUsed > 0) {
+                let energyConsumption = powerRating * hoursUsed; // kWh per day
+                appliances.push({ name, powerRating, hoursUsed, energyConsumption });
+
+                let applianceList = document.getElementById("appliance-list");
+                let listItem = document.createElement("div");
+                listItem.textContent = `${name}: ${energyConsumption.toFixed(2)} kWh/day`;
+
+                // Add remove button next to the appliance
+                let removeButton = document.createElement("button");
+                removeButton.textContent = "Remove";
+                removeButton.style.marginLeft = "10px";
+                removeButton.addEventListener("click", () => {
+                    appliances = appliances.filter(appliance => appliance.name !== name);
+                    listItem.remove();
+                });
+
+                listItem.appendChild(removeButton);
+                applianceList.appendChild(listItem);
+
+                clearInputs();
+            } else {
+                alert("Please enter valid inputs for all fields.");
+            }
+        }
+
+        // Function to calculate total energy consumption and display suggestions
+        function calculateTotalConsumption() {
+            let totalConsumption = appliances.reduce((total, appliance) => total + appliance.energyConsumption, 0);
+            let resultDiv = document.getElementById("result");
+            resultDiv.textContent = `Total Energy Consumption: ${totalConsumption.toFixed(2)} kWh/day`;
+
+            displaySuggestions(totalConsumption);
+        }
+
+        // Function to display suggestions based on energy consumption levels
+        function displaySuggestions(totalConsumption) {
+            let suggestionsDiv = document.getElementById("suggestions");
+
+            if (totalConsumption > 50) {
+                suggestionsDiv.textContent = "High consumption! Consider using energy-efficient appliances.";
+                suggestionsDiv.className = "high-consumption";
+            } else if (totalConsumption > 20) {
+                suggestionsDiv.textContent = "Moderate consumption. Try reducing usage where possible.";
+                suggestionsDiv.className = "moderate-consumption";
+            } else {
+                suggestionsDiv.textContent = "Good job! Your consumption is efficient.";
+                suggestionsDiv.className = "low-consumption";
+            }
+        }
+
+        // Function to clear input fields after adding an appliance
+        function clearInputs() {
+            document.getElementById("name").value = "";
+            document.getElementById("power-rating").value = "";
+            document.getElementById("hours-used").value = "";
+        }
+
+        // Function to reset the calculator
+        function resetCalculator() {
+            appliances = [];
+            document.getElementById("appliance-list").innerHTML = "";
+            document.getElementById("result").textContent = "";
+            document.getElementById("suggestions").textContent = "";
+        }
+    </script>
+
+</body>
+</html>
